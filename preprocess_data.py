@@ -11,7 +11,7 @@ import subprocess
 
 import deep_sdf
 import deep_sdf.workspace as ws
-from mesh_to_sdf.explore_vcl.explore_demo import sdf_process
+from mesh_to_sdf.sdf_process import sdf_process
 
 
 def filter_classes_glob(patterns, classes):
