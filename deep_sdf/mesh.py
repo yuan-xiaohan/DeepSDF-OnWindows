@@ -91,9 +91,9 @@ def convert_sdf_samples_to_ply(
     """
     start_time = time.time()
 
-    numpy_3d_sdf_numpy = pytorch_3d_sdf_tensor.numpy()
-    verts, faces, normals, values = skimage.measure.marching_cubes(
-        numpy_3d_sdf_numpy, level=0.0, spacing=[voxel_size] * 3
+    numpy_3d_sdf_tensor = pytorch_3d_sdf_tensor.numpy()
+    verts, faces, normals, values = skimage.measure.marching_cubes_lewiner(
+        numpy_3d_sdf_tensor, level=0.0, spacing=[voxel_size] * 3
     )
 
 

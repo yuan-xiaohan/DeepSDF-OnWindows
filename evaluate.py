@@ -2,7 +2,6 @@
 # Copyright 2004-present Facebook. All Rights Reserved.
 
 import argparse
-import sys
 import logging
 import json
 import numpy as np
@@ -13,7 +12,7 @@ import deep_sdf
 import deep_sdf.workspace as ws
 
 
-def evaluate(experiment_directory: object, checkpoint: object, data_dir: object, split_filename: object) -> object:
+def evaluate(experiment_directory, checkpoint, data_dir, split_filename):
 
     with open(split_filename, "r") as f:
         split = json.load(f)
@@ -120,11 +119,6 @@ if __name__ == "__main__":
         required=True,
         help="The split to evaluate.",
     )
-    sys.argv = [r"reconstruct.py",
-                "--experiment", r"D:\XiaohanYuan\SDF\examples\cardiac",
-                "--split", "examples/cardiac/test.json",
-                "--data", "D:/XiaohanYuan/SDF/data_source"
-                ]
 
     deep_sdf.add_common_args(arg_parser)
 

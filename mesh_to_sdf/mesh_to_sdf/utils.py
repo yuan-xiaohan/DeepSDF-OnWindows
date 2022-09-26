@@ -43,11 +43,9 @@ def check_voxels(voxels):
     max_distance = max(np.max(d1), np.max(d2), np.max(d3))
     return max_distance < 2.0 / voxels.shape[0] * 3**0.5 * 1.1
 
-def sample_uniform_points_in_unit_sphere(amount, sampling_type):
+def sample_uniform_points_in_unit_sphere(amount):
     unit_sphere_points = np.random.uniform(-1, 1, size=(amount * 2 + 20, 3))
-
-    if sampling_type=="sphere":
-        unit_sphere_points = unit_sphere_points[np.linalg.norm(unit_sphere_points, axis=1) < 1]
+    unit_sphere_points = unit_sphere_points[np.linalg.norm(unit_sphere_points, axis=1) < 1]
 
     points_available = unit_sphere_points.shape[0]
     if points_available < amount:

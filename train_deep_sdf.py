@@ -489,13 +489,13 @@ def main_function(experiment_directory, continue_from, batch_split):
             optimizer_all.zero_grad()
 
             for i in range(batch_split):
-                # 以N(0, 1)随机初始化vec
+
                 batch_vecs = lat_vecs(indices[i])
 
-                input = torch.cat([batch_vecs, xyz[i]], dim=1).cuda()  # [N, vec_size+3]
+                input = torch.cat([batch_vecs, xyz[i]], dim=1).cuda()
 
                 # NN optimization
-                pred_sdf = decoder(input)  # [N, 1(sdf value)]
+                pred_sdf = decoder(input)
 
                 if enforce_minmax:
                     pred_sdf = torch.clamp(pred_sdf, minT, maxT)

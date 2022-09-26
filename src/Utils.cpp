@@ -101,6 +101,7 @@ Eigen::Vector3f SamplePointFromTriangle(
   const float r1 = rand_dist(generator);
   const float r2 = rand_dist(generator);
 
+//why?
   return Eigen::Vector3f(
       (1 - std::sqrt(r1)) * a + std::sqrt(r1) * (1 - r2) * b + r2 * std::sqrt(r1) * c);
 }

@@ -529,7 +529,7 @@ int main(int argc, char** argv) {
   std::vector<float> sdf;
   int num_samp_near_surf = (int)(47 * num_sample / 50);
   std::cout << "num_samp_near_surf: " << num_samp_near_surf << std::endl;
-  SampleFromSurface(geom, xyz_surf, num_samp_near_surf / 2);
+  SampleFromSurface(geom, xyz_surf, num_samp_near_surf / 2);  // why /2?
 
   auto start = std::chrono::high_resolution_clock::now();
   SampleSDFNearSurface(

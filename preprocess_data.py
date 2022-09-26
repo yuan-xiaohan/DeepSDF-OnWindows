@@ -11,7 +11,7 @@ import subprocess
 
 import deep_sdf
 import deep_sdf.workspace as ws
-from mesh_to_sdf.sdf_process import sdf_process
+from mesh_to_sdf.sdf_process import PreprocessMesh, SampleVisibleMeshSurface
 
 
 def filter_classes_glob(patterns, classes):
@@ -147,10 +147,11 @@ if __name__ == "__main__":
 
     sys.argv = [r"preprocess_data.py",
                 "--data_dir", r"D:\XiaohanYuan\SDF\data_source",
-                "--source", r"\\SEUVCL-DATA-01\Medical\[PRO]SDF\obj_pca",
+                "--source", r"\\SEUVCL-DATA-02\Data02Training\XiaohanYuan\[PRO]SDF\obj",
                 "--name", "cardiac",
-                "--split", r"examples/cardiac/train.json",
-                "--skip"
+                "--split", r"examples\cardiac\train.json",
+                "--skip",
+                "--surface"
                 ]
 
     deep_sdf.add_common_args(arg_parser)
@@ -158,21 +159,13 @@ if __name__ == "__main__":
     args = arg_parser.parse_args()
 
     deep_sdf.configure_logging(args)
-
-    additional_general_args = []
-
     deepsdf_dir = os.path.dirname(os.path.abspath(__file__))
     if args.surface_sampling:
-        executable = os.path.join(deepsdf_dir, "bin/SampleVisibleMeshSurface")
         subdir = ws.surface_samples_subdir
         extension = ".ply"
     else:
-        executable = os.path.join(deepsdf_dir, "bin/PreprocessMesh")
         subdir = ws.sdf_samples_subdir
         extension = ".npz"
-
-        if args.test_sampling:
-            additional_general_args += ["-t"]
 
     with open(args.split_filename, "r") as f:
         split = json.load(f)
@@ -191,14 +184,6 @@ if __name__ == "__main__":
 
     if not os.path.isdir(dest_dir):
         os.makedirs(dest_dir)
-
-    if args.surface_sampling:
-        normalization_param_dir = os.path.join(
-            args.data_dir, ws.normalization_param_subdir, args.source_name
-        )
-        if not os.path.isdir(normalization_param_dir):
-            os.makedirs(normalization_param_dir)
-
     append_data_source_map(args.data_dir, args.source_name, args.source_dir)
 
     class_directories = split[args.source_name]
@@ -216,67 +201,34 @@ if __name__ == "__main__":
             os.mkdir(target_dir)
 
         for instance_dir in instance_dirs:
-
             # shape_dir = os.path.join(class_path, instance_dir)
-            shape_dir = os.path.join(class_path, instance_dir+".obj")
+            shape_dir = os.path.join(class_path, instance_dir + ".obj")
+            if args.surface_sampling:
+                processed_filepath = os.path.join(target_dir, instance_dir + ".ply")
+                normalization_param_dir = os.path.join(
+                    args.data_dir, ws.normalization_param_subdir, args.source_name
+                )
+                if not os.path.isdir(normalization_param_dir):
+                    os.makedirs(normalization_param_dir)
+                normalization_param_target_dir = os.path.join(
+                    normalization_param_dir, class_dir)
+                if not os.path.isdir(normalization_param_target_dir):
+                    os.mkdir(normalization_param_target_dir)
 
-            processed_filepath = os.path.join(target_dir, instance_dir + extension)
-            # mesh_filename = deep_sdf.data.find_mesh_in_directory(shape_dir)
-            if args.skip and os.path.isfile(processed_filepath):
-                logging.debug("skipping " + processed_filepath)
-                continue
+                normalization_param_filename = os.path.join(
+                    normalization_param_target_dir, instance_dir + ".npz"
+                )
 
-            print(shape_dir, processed_filepath)
-            sdf_process(shape_dir, processed_filepath)
+                print(shape_dir, processed_filepath)
+                SampleVisibleMeshSurface(shape_dir, processed_filepath, normalization_param_filename)
+            else:
+                processed_filepath = os.path.join(target_dir, instance_dir + ".npz")
+                # mesh_filename = deep_sdf.data.find_mesh_in_directory(shape_dir)
+                if args.skip and os.path.isfile(processed_filepath):
+                    logging.debug("skipping " + processed_filepath)
+                    continue
+
+                print(shape_dir, processed_filepath)
+                PreprocessMesh(shape_dir, processed_filepath, args.test_sampling)
 
 
-    #
-    #         try:
-    #             mesh_filename = deep_sdf.data.find_mesh_in_directory(shape_dir)
-    #
-    #             specific_args = []
-    #
-    #             if args.surface_sampling:
-    #                 normalization_param_target_dir = os.path.join(
-    #                     normalization_param_dir, class_dir
-    #                 )
-    #
-    #                 if not os.path.isdir(normalization_param_target_dir):
-    #                     os.mkdir(normalization_param_target_dir)
-    #
-    #                 normalization_param_filename = os.path.join(
-    #                     normalization_param_target_dir, instance_dir + ".npz"
-    #                 )
-    #                 specific_args = ["-n", normalization_param_filename]
-    #
-    #             meshes_targets_and_specific_args.append(
-    #                 (
-    #                     os.path.join(shape_dir, mesh_filename),
-    #                     processed_filepath,
-    #                     specific_args,
-    #                 )
-    #             )
-    #
-    #         except deep_sdf.data.NoMeshFileError:
-    #             logging.warning("No mesh found for instance " + instance_dir)
-    #         except deep_sdf.data.MultipleMeshFileError:
-    #             logging.warning("Multiple meshes found for instance " + instance_dir)
-    #
-    # with concurrent.futures.ThreadPoolExecutor(
-    #     max_workers=int(args.num_threads)
-    # ) as executor:
-    #
-    #     for (
-    #         mesh_filepath,
-    #         target_filepath,
-    #         specific_args,
-    #     ) in meshes_targets_and_specific_args:
-    #         executor.submit(
-    #             process_mesh,
-    #             mesh_filepath,
-    #             target_filepath,
-    #             executable,
-    #             specific_args + additional_general_args,
-    #         )
-    #
-    #     executor.shutdown()
